@@ -11,6 +11,33 @@ import {
 } from 'react-icons/fa';
 import AnimatedSection from '../../components/AnimatedSection';
 
+// ✅ Icon map for common spec keys
+const SPEC_ICONS = {
+  motor: FaBolt,
+  battery: FaBatteryFull,
+  range: FaTachometerAlt,
+  speed: FaTachometerAlt,
+  weight: FaWeight,
+  brakes: FaCog,
+  frame: FaCog,
+  wheel: FaCog,
+  gears: FaCog,
+  suspension: FaCog,
+  tyres: FaCog,
+  fork: FaCog,
+  chainset: FaCog,
+};
+
+// ✅ Safely convert MongoDB Map or plain object to entries array
+function getSpecEntries(specs) {
+  if (!specs) return [];
+  if (specs instanceof Map) return [...specs.entries()];
+  if (typeof specs === 'object') {
+    return Object.entries(specs).filter(([, v]) => v && v.toString().trim() !== '');
+  }
+  return [];
+}
+
 export default function CycleDetailPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -54,11 +81,14 @@ export default function CycleDetailPage() {
     );
   }
 
-  const discount = Math.round(
-    ((cycle.originalPrice - cycle.price) / cycle.originalPrice) * 100
-  );
+  const discount = cycle.originalPrice > cycle.price
+    ? Math.round(((cycle.originalPrice - cycle.price) / cycle.originalPrice) * 100)
+    : 0;
 
-  const hasImages = cycle.images && cycle.images.length > 0;
+  const hasImages = cycle.images?.length > 0 &&
+    cycle.images.some((img) => img.startsWith('http'));
+
+  const specEntries = getSpecEntries(cycle.specs);
 
   const prevImage = () =>
     setActiveImage((prev) => (prev === 0 ? cycle.images.length - 1 : prev - 1));
@@ -81,12 +111,11 @@ export default function CycleDetailPage() {
 
         <div className="grid lg:grid-cols-2 gap-12">
 
-          {/* ✅ Image Gallery Section */}
+          {/* Image Gallery */}
           <AnimatedSection direction="left">
             <div className="glass rounded-3xl overflow-hidden">
 
-              {/* Main Image */}
-              <div className="relative h-[400px] sm:h-[500px] bg-gradient-to-br from-dark-light to-dark overflow-hidden">
+              <div className="relative h-[400px] sm:h-[500px] bg-gradient-to-br from-[#1a1a2e] to-[#0a0a0a] overflow-hidden">
                 {hasImages ? (
                   <>
                     <AnimatePresence mode="wait">
@@ -106,35 +135,25 @@ export default function CycleDetailPage() {
                           sizes="(max-width: 768px) 100vw, 50vw"
                           priority
                         />
-                        {/* Dark overlay for badges */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                       </motion.div>
                     </AnimatePresence>
 
-                    {/* Prev / Next arrows — only if multiple images */}
                     {cycle.images.length > 1 && (
                       <>
-                        <button
-                          onClick={prevImage}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-primary/80 text-white rounded-full p-2 transition-colors"
-                        >
+                        <button onClick={prevImage}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-primary/80 text-white rounded-full p-2 transition-colors">
                           <FaChevronLeft />
                         </button>
-                        <button
-                          onClick={nextImage}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-primary/80 text-white rounded-full p-2 transition-colors"
-                        >
+                        <button onClick={nextImage}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-primary/80 text-white rounded-full p-2 transition-colors">
                           <FaChevronRight />
                         </button>
-
-                        {/* Dot indicators */}
                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
                           {cycle.images.map((_, i) => (
-                            <button
-                              key={i}
-                              onClick={() => setActiveImage(i)}
-                              className={`w-2 h-2 rounded-full transition-all ${
-                                i === activeImage ? 'bg-primary w-5' : 'bg-white/40'
+                            <button key={i} onClick={() => setActiveImage(i)}
+                              className={`h-2 rounded-full transition-all ${
+                                i === activeImage ? 'bg-primary w-5' : 'bg-white/40 w-2'
                               }`}
                             />
                           ))}
@@ -143,14 +162,10 @@ export default function CycleDetailPage() {
                     )}
                   </>
                 ) : (
-                  // Fallback emoji
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <motion.div
-                      className="text-[150px]"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                    >
+                    <motion.div className="text-[150px]"
+                      initial={{ scale: 0 }} animate={{ scale: 1 }}
+                      transition={{ type: 'spring', stiffness: 200, damping: 15 }}>
                       {cycle.isElectric ? '⚡🚲' : '🚲'}
                     </motion.div>
                   </div>
@@ -164,33 +179,22 @@ export default function CycleDetailPage() {
                     </span>
                   )}
                   {discount > 0 && (
-                    <span className="bg-neon-pink/90 text-white text-sm px-4 py-2 rounded-full font-semibold">
-                      {discount}% OFF
+                    <span className="bg-pink-500/90 text-white text-sm px-4 py-2 rounded-full font-semibold">
+                      -{discount}% OFF
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* ✅ Thumbnail Strip */}
+              {/* Thumbnail Strip */}
               {hasImages && cycle.images.length > 1 && (
                 <div className="flex gap-2 p-4 overflow-x-auto scrollbar-hide">
                   {cycle.images.map((img, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setActiveImage(i)}
+                    <button key={i} onClick={() => setActiveImage(i)}
                       className={`relative flex-shrink-0 w-20 h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                        i === activeImage
-                          ? 'border-primary scale-105'
-                          : 'border-white/10 hover:border-white/30'
-                      }`}
-                    >
-                      <Image
-                        src={img}
-                        alt={`Thumbnail ${i + 1}`}
-                        fill
-                        className="object-cover"
-                        sizes="80px"
-                      />
+                        i === activeImage ? 'border-primary scale-105' : 'border-white/10 hover:border-white/30'
+                      }`}>
+                      <Image src={img} alt={`Thumbnail ${i + 1}`} fill className="object-cover" sizes="80px" />
                     </button>
                   ))}
                 </div>
@@ -198,17 +202,14 @@ export default function CycleDetailPage() {
             </div>
           </AnimatedSection>
 
-          {/* Details Section — no changes needed here */}
+          {/* Details */}
           <AnimatedSection direction="right">
             <div>
               {/* Rating */}
               <div className="flex items-center gap-2 mb-3">
                 <div className="flex gap-1">
                   {[...Array(5)].map((_, i) => (
-                    <FaStar
-                      key={i}
-                      className={i < Math.floor(cycle.rating) ? 'text-accent' : 'text-gray-600'}
-                    />
+                    <FaStar key={i} className={i < Math.floor(cycle.rating) ? 'text-yellow-400' : 'text-gray-600'} />
                   ))}
                 </div>
                 <span className="text-gray-400 text-sm">
@@ -232,13 +233,13 @@ export default function CycleDetailPage() {
                   </span>
                 )}
                 {discount > 0 && (
-                  <span className="bg-neon-green/10 text-neon-green text-sm px-3 py-1 rounded-full font-semibold">
+                  <span className="bg-green-500/10 text-green-400 text-sm px-3 py-1 rounded-full font-semibold">
                     Save ₹{(cycle.originalPrice - cycle.price).toLocaleString()}
                   </span>
                 )}
               </div>
 
-              {/* ✅ Description */}
+              {/* Description */}
               <p className="text-gray-400 text-lg leading-relaxed mb-8">
                 {cycle.description}
               </p>
@@ -246,15 +247,10 @@ export default function CycleDetailPage() {
               {/* Features */}
               {cycle.features?.length > 0 && (
                 <div className="mb-8">
-                  <h3 className="text-lg font-bold text-white mb-3 font-rajdhani">
-                    Key Features
-                  </h3>
+                  <h3 className="text-lg font-bold text-white mb-3 font-rajdhani">Key Features</h3>
                   <div className="flex flex-wrap gap-2">
                     {cycle.features.map((feature, i) => (
-                      <span
-                        key={i}
-                        className="bg-primary/10 text-primary text-sm px-4 py-2 rounded-full border border-primary/20"
-                      >
+                      <span key={i} className="bg-primary/10 text-primary text-sm px-4 py-2 rounded-full border border-primary/20">
                         {feature}
                       </span>
                     ))}
@@ -264,26 +260,20 @@ export default function CycleDetailPage() {
 
               {/* Stock */}
               <div className="flex items-center gap-2 mb-8">
-                <span className={`w-3 h-3 rounded-full ${cycle.inStock ? 'bg-neon-green' : 'bg-red-500'}`} />
-                <span className={cycle.inStock ? 'text-neon-green' : 'text-red-500'}>
+                <span className={`w-3 h-3 rounded-full ${cycle.inStock ? 'bg-green-400' : 'bg-red-500'}`} />
+                <span className={cycle.inStock ? 'text-green-400' : 'text-red-500'}>
                   {cycle.inStock ? 'In Stock' : 'Out of Stock'}
                 </span>
               </div>
 
               {/* CTA Buttons */}
               <div className="flex flex-wrap gap-4 mb-8">
-                <a
-                  href="tel:07386117144"
-                  className="btn-primary px-8 py-4 rounded-xl text-white font-bold flex items-center gap-2 text-lg"
-                >
+                <a href="tel:07386117144"
+                  className="btn-primary px-8 py-4 rounded-xl text-white font-bold flex items-center gap-2 text-lg">
                   <FaPhone /> Call to Order
                 </a>
-                <a
-                  href="https://wa.me/917386117144"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-8 py-4 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold flex items-center gap-2 text-lg transition-colors"
-                >
+                <a href="https://wa.me/917386117144" target="_blank" rel="noopener noreferrer"
+                  className="px-8 py-4 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold flex items-center gap-2 text-lg transition-colors">
                   <FaWhatsapp /> WhatsApp
                 </a>
               </div>
@@ -305,26 +295,15 @@ export default function CycleDetailPage() {
           </AnimatedSection>
         </div>
 
-        {/* Specifications */}
-        {cycle.isElectric && cycle.specs && (
+        {/* ✅ Specifications — shown for ALL cycles, only filled specs */}
+        {specEntries.length > 0 && (
           <AnimatedSection className="mt-16">
             <h2 className="text-3xl font-orbitron font-bold mb-8">
               <span className="gradient-text">Specifications</span>
             </h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {Object.entries(cycle.specs).map(([key, value], i) => {
-                const icons = {
-                  motor: FaBolt,
-                  battery: FaBatteryFull,
-                  range: FaTachometerAlt,
-                  speed: FaTachometerAlt,
-                  weight: FaWeight,
-                  brakes: FaCog,
-                  frame: FaCog,
-                  wheel: FaCog,
-                };
-                const Icon = icons[key] || FaCog;
-
+              {specEntries.map(([key, value], i) => {
+                const Icon = SPEC_ICONS[key] || FaCog;
                 return (
                   <motion.div
                     key={key}
@@ -343,6 +322,7 @@ export default function CycleDetailPage() {
             </div>
           </AnimatedSection>
         )}
+
       </div>
     </div>
   );
