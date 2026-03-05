@@ -19,7 +19,7 @@ export default function CycleCard({ cycle, index = 0 }) {
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
     >
-      <Link href={`/cycles/${cycle.id}`}>
+      <Link href={`/cycles/${cycle._id}`}>
         <div className="cycle-card glass rounded-2xl overflow-hidden group cursor-pointer">
           
           {/* Image */}

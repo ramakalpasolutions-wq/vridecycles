@@ -174,7 +174,7 @@ export default function CyclesPage() {
         {/* Cycles Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {filtered.map((cycle, index) => (
-            <CycleCard key={cycle.id} cycle={cycle} index={index} />
+            <CycleCard key={cycle._id} cycle={cycle} index={index} />
           ))}
         </div>
 

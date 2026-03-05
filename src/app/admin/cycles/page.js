@@ -3,13 +3,10 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import toast from 'react-hot-toast';
 import {
-  FaPlus,
-  FaEdit,
-  FaTrash,
-  FaBolt,
-  FaSearch,
+  FaPlus, FaEdit, FaTrash, FaBolt, FaSearch,
 } from 'react-icons/fa';
 
 export default function AdminCyclesPage() {
@@ -37,7 +34,7 @@ export default function AdminCyclesPage() {
       } else {
         toast.error('Failed to delete');
       }
-    } catch (error) {
+    } catch {
       toast.error('Something went wrong!');
     }
   };
@@ -52,9 +49,7 @@ export default function AdminCyclesPage() {
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-orbitron font-bold text-white">
-            All Cycles
-          </h1>
+          <h1 className="text-3xl font-orbitron font-bold text-white">All Cycles</h1>
           <p className="text-gray-500 mt-1">
             Manage your cycle inventory ({cycles.length} total)
           </p>
@@ -63,8 +58,7 @@ export default function AdminCyclesPage() {
           href="/admin/cycles/add"
           className="btn-primary px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2"
         >
-          <FaPlus />
-          Add New Cycle
+          <FaPlus /> Add New Cycle
         </Link>
       </div>
 
@@ -88,58 +82,61 @@ export default function AdminCyclesPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-white/10 bg-white/5">
-                <th className="text-left py-4 px-6 text-gray-400 text-sm font-medium">
-                  Cycle
-                </th>
-                <th className="text-left py-4 px-6 text-gray-400 text-sm font-medium">
-                  Category
-                </th>
-                <th className="text-left py-4 px-6 text-gray-400 text-sm font-medium">
-                  Price
-                </th>
-                <th className="text-left py-4 px-6 text-gray-400 text-sm font-medium">
-                  Status
-                </th>
-                <th className="text-left py-4 px-6 text-gray-400 text-sm font-medium">
-                  Featured
-                </th>
-                <th className="text-center py-4 px-6 text-gray-400 text-sm font-medium">
-                  Actions
-                </th>
+                <th className="text-left py-4 px-6 text-gray-400 text-sm font-medium">Cycle</th>
+                <th className="text-left py-4 px-6 text-gray-400 text-sm font-medium">Category</th>
+                <th className="text-left py-4 px-6 text-gray-400 text-sm font-medium">Price</th>
+                <th className="text-left py-4 px-6 text-gray-400 text-sm font-medium">Status</th>
+                <th className="text-left py-4 px-6 text-gray-400 text-sm font-medium">Featured</th>
+                <th className="text-center py-4 px-6 text-gray-400 text-sm font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((cycle, i) => (
                 <motion.tr
-                  key={cycle.id}
+                  key={cycle._id} // ✅ _id
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.05 }}
                   className="border-b border-white/5 hover:bg-white/5 transition-colors"
                 >
+                  {/* Cycle Name + Image */}
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">
-                        {cycle.isElectric ? '⚡🚲' : '🚲'}
-                      </span>
+                      {/* ✅ Show Cloudinary image if available */}
+                      {cycle.images?.length > 0 && cycle.images[0].startsWith('http') ? (
+                        <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                          <Image
+                            src={cycle.images[0]}
+                            alt={cycle.name}
+                            fill
+                            className="object-cover"
+                            sizes="48px"
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-2xl">
+                          {cycle.isElectric ? '⚡🚲' : '🚲'}
+                        </span>
+                      )}
                       <div>
                         <p className="text-white font-medium">{cycle.name}</p>
                         <p className="text-gray-500 text-xs">
                           {cycle.isElectric && (
                             <span className="flex items-center gap-1">
-                              <FaBolt className="text-primary" />
-                              Electric
+                              <FaBolt className="text-primary" /> Electric
                             </span>
                           )}
                         </p>
                       </div>
                     </div>
                   </td>
+
                   <td className="py-4 px-6">
                     <span className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full capitalize">
                       {cycle.category}
                     </span>
                   </td>
+
                   <td className="py-4 px-6">
                     <p className="text-primary font-orbitron font-bold">
                       ₹{cycle.price.toLocaleString()}
@@ -150,38 +147,37 @@ export default function AdminCyclesPage() {
                       </p>
                     )}
                   </td>
+
                   <td className="py-4 px-6">
-                    <span
-                      className={`text-xs px-3 py-1 rounded-full ${
-                        cycle.inStock
-                          ? 'bg-neon-green/10 text-neon-green'
-                          : 'bg-red-500/10 text-red-500'
-                      }`}
-                    >
+                    <span className={`text-xs px-3 py-1 rounded-full ${
+                      cycle.inStock
+                        ? 'bg-neon-green/10 text-neon-green'
+                        : 'bg-red-500/10 text-red-500'
+                    }`}>
                       {cycle.inStock ? 'In Stock' : 'Out of Stock'}
                     </span>
                   </td>
+
                   <td className="py-4 px-6">
-                    <span
-                      className={`text-xs px-3 py-1 rounded-full ${
-                        cycle.isFeatured
-                          ? 'bg-accent/10 text-accent'
-                          : 'bg-gray-500/10 text-gray-500'
-                      }`}
-                    >
+                    <span className={`text-xs px-3 py-1 rounded-full ${
+                      cycle.isFeatured
+                        ? 'bg-accent/10 text-accent'
+                        : 'bg-gray-500/10 text-gray-500'
+                    }`}>
                       {cycle.isFeatured ? 'Featured' : 'Regular'}
                     </span>
                   </td>
+
                   <td className="py-4 px-6">
                     <div className="flex items-center justify-center gap-2">
                       <Link
-                        href={`/admin/cycles/edit/${cycle.id}`}
+                        href={`/admin/cycles/edit/${cycle._id}`} // ✅ _id
                         className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                       >
                         <FaEdit />
                       </Link>
                       <button
-                        onClick={() => handleDelete(cycle.id, cycle.name)}
+                        onClick={() => handleDelete(cycle._id, cycle.name)} // ✅ _id
                         className="p-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
                       >
                         <FaTrash />
@@ -196,7 +192,9 @@ export default function AdminCyclesPage() {
 
         {filtered.length === 0 && (
           <div className="text-center py-12">
+            <p className="text-6xl mb-4">🚲</p>
             <p className="text-gray-500">No cycles found</p>
+            <p className="text-gray-600 text-sm mt-1">Add your first cycle using the button above</p>
           </div>
         )}
       </div>

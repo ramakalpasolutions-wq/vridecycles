@@ -20,7 +20,16 @@ export default function EditCyclePage() {
     fetch(`/api/cycles/${id}`)
       .then((res) => res.json())
       .then((data) => {
-        setFormData(data);
+        // ✅ Normalize MongoDB _id fields
+        setFormData({
+          ...data,
+          specs: data.specs || {
+            motor: '', battery: '', range: '', speed: '',
+            weight: '', brakes: '', frame: '', wheel: '',
+          },
+          features: data.features || [],
+          images: data.images || [],
+        });
         setLoading(false);
       })
       .catch(() => {
@@ -62,7 +71,6 @@ export default function EditCyclePage() {
     setFormData((prev) => ({ ...prev, features: prev.features.filter((_, i) => i !== index) }));
   };
 
-  // ✅ Cloudinary Upload Handler
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
@@ -89,7 +97,7 @@ export default function EditCyclePage() {
 
     setFormData((prev) => ({ ...prev, images: [...(prev.images || []), ...uploadedUrls] }));
     setUploading(false);
-    toast.success(`${uploadedUrls.length} image(s) uploaded!`);
+    if (uploadedUrls.length) toast.success(`${uploadedUrls.length} image(s) uploaded!`);
   };
 
   const removeImage = (index) => {
@@ -142,7 +150,8 @@ export default function EditCyclePage() {
 
       <form onSubmit={handleSubmit}>
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Basic Info — same as before, no changes needed */}
+
+          {/* Basic Info */}
           <div className="glass rounded-2xl p-6">
             <h2 className="text-lg font-bold text-white mb-6 font-rajdhani">Basic Information</h2>
             <div className="space-y-4">
@@ -200,10 +209,9 @@ export default function EditCyclePage() {
           {/* Right Column */}
           <div className="space-y-8">
 
-            {/* ✅ Cloudinary Image Upload */}
+            {/* Cloudinary Image Upload */}
             <div className="glass rounded-2xl p-6">
               <h2 className="text-lg font-bold text-white mb-6 font-rajdhani">Cycle Images</h2>
-
               <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-white/20 rounded-xl cursor-pointer hover:border-primary/50 transition-colors bg-white/5">
                 <FaUpload className="text-2xl text-gray-400 mb-2" />
                 <span className="text-gray-400 text-sm">
@@ -217,7 +225,7 @@ export default function EditCyclePage() {
                 <div className="grid grid-cols-3 gap-3 mt-4">
                   {formData.images.map((url, i) => (
                     <div key={i} className="relative group rounded-lg overflow-hidden aspect-square">
-                      <Image src={url} alt={`Cycle image ${i + 1}`} fill className="object-cover" />
+                      <Image src={url} alt={`Cycle image ${i + 1}`} fill className="object-cover" sizes="120px" />
                       <button
                         type="button"
                         onClick={() => removeImage(i)}
@@ -259,7 +267,7 @@ export default function EditCyclePage() {
                 {Object.entries(formData.specs).map(([key, value]) => (
                   <div key={key}>
                     <label className="text-sm text-gray-400 mb-1 block capitalize">{key}</label>
-                    <input type="text" name={key} value={value} onChange={handleSpecChange} className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm" />
+                    <input type="text" name={key} value={value || ''} onChange={handleSpecChange} className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm" placeholder={`Enter ${key}`} />
                   </div>
                 ))}
               </div>
