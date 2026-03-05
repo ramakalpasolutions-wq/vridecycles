@@ -5,13 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  FaBicycle,
-  FaBars,
-  FaTimes,
-  FaPhone,
-  FaMapMarkerAlt,
-  FaClock,
-  FaBolt,
+  FaBars, FaTimes, FaPhone,
+  FaMapMarkerAlt, FaClock, FaBolt,
 } from 'react-icons/fa';
 
 export default function Navbar() {
@@ -20,9 +15,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -40,7 +33,7 @@ export default function Navbar() {
   return (
     <>
       {/* Top Bar */}
-      <div className="hidden md:block bg-gradient-to-r from-[#1a1a2e] to-[#0a0a0a] border-b border-white/5">
+      <div className="hidden md:block bg-[#050510] border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center text-sm text-gray-400">
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-2">
@@ -54,17 +47,17 @@ export default function Navbar() {
           </div>
           <div className="flex items-center gap-2">
             <FaClock className="text-[#00d4ff] text-xs" />
-            Open Today: 9 AM - 9 PM
+            Open Today: 9 AM – 9 PM
           </div>
         </div>
       </div>
 
       {/* Main Navbar */}
       <motion.nav
-        className={`sticky top-0 z-50 transition-all duration-500 ${
+        className={`sticky top-0 z-50 transition-all duration-500 border-b ${
           scrolled
-            ? 'glass-strong shadow-lg shadow-[#00d4ff]/10'
-            : 'bg-[#0a0a0a]/80 backdrop-blur-md'
+            ? 'bg-[#0a0a0a] border-white/10 shadow-lg shadow-black/50'
+            : 'bg-[#0a0a0a] border-transparent'
         }`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
@@ -72,6 +65,7 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
+
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group">
               <motion.div
@@ -82,7 +76,7 @@ export default function Navbar() {
                 <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#00d4ff] to-[#7c3aed] flex items-center justify-center">
                   <FaBolt className="text-white text-xl" />
                 </div>
-                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#00d4ff] to-[#7c3aed] opacity-50 blur-md group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#00d4ff] to-[#7c3aed] opacity-0 blur-md group-hover:opacity-50 transition-opacity" />
               </motion.div>
               <div>
                 <h1
@@ -92,7 +86,7 @@ export default function Navbar() {
                   V RIDE
                 </h1>
                 <p
-                  className="text-[10px] text-gray-400 tracking-widest -mt-1"
+                  className="text-[10px] text-gray-500 tracking-widest -mt-1"
                   style={{ fontFamily: "'Rajdhani', sans-serif" }}
                 >
                   EMOTORAD E-CYCLES
@@ -109,7 +103,7 @@ export default function Navbar() {
                   className={`relative px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${
                     pathname === link.href
                       ? 'text-[#00d4ff]'
-                      : 'text-gray-300 hover:text-white'
+                      : 'text-gray-400 hover:text-white'
                   }`}
                 >
                   {pathname === link.href && (
@@ -152,7 +146,7 @@ export default function Navbar() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden glass-strong border-t border-white/10"
+              className="md:hidden bg-[#0d0d0d] border-t border-white/10"
             >
               <div className="px-4 py-6 space-y-2">
                 {navLinks.map((link, index) => (
@@ -168,7 +162,7 @@ export default function Navbar() {
                       className={`block px-4 py-3 rounded-lg font-medium transition-all ${
                         pathname === link.href
                           ? 'bg-[#00d4ff]/10 text-[#00d4ff] border border-[#00d4ff]/30'
-                          : 'text-gray-300 hover:bg-white/5'
+                          : 'text-gray-400 hover:bg-white/5 hover:text-white'
                       }`}
                     >
                       {link.label}
@@ -185,7 +179,7 @@ export default function Navbar() {
                     onClick={() => setIsOpen(false)}
                     className="block btn-primary text-center px-4 py-3 rounded-lg font-semibold text-white mt-4"
                   >
-                    📞 Book Now - 073861 17144
+                    📞 Book Now — 073861 17144
                   </Link>
                 </motion.div>
               </div>

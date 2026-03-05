@@ -1,17 +1,81 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import AnimatedSection from '../components/AnimatedSection';
 import LocationMap from '../components/LocationMap';
 import toast from 'react-hot-toast';
 import {
-  FaPhone,
-  FaWhatsapp,
-  FaMapMarkerAlt,
-  FaClock,
-  FaPaperPlane,
+  FaPhone, FaWhatsapp, FaMapMarkerAlt, FaClock,
+  FaPaperPlane, FaChevronDown,
 } from 'react-icons/fa';
+
+// ✅ Custom dark dropdown
+function CustomSelect({ value, onChange, options, placeholder }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const selected = options.find((o) => o.value === value);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((p) => !p)}
+        className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:border-primary/50 transition-colors"
+      >
+        <span className={`text-sm ${!selected ? 'text-gray-500' : 'text-white'}`}>
+          {selected ? selected.label : placeholder}
+        </span>
+        <FaChevronDown
+          className={`text-gray-400 text-xs transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+
+      {open && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.15 }}
+          className="absolute left-0 right-0 top-full mt-2 z-50 rounded-xl overflow-hidden border border-white/10 shadow-xl"
+          style={{ background: '#0f0f1a' }}
+        >
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => { onChange(opt.value); setOpen(false); }}
+              className={`w-full text-left px-4 py-3 text-sm transition-colors hover:bg-primary/10 hover:text-primary border-b border-white/5 last:border-0 ${
+                value === opt.value
+                  ? 'text-primary bg-primary/10 font-medium'
+                  : 'text-gray-300'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
+const subjectOptions = [
+  { value: 'inquiry', label: '🛒 Product Inquiry' },
+  { value: 'test-ride', label: '🚴 Book Test Ride' },
+  { value: 'service', label: '🔧 Service Request' },
+  { value: 'emi', label: '💳 EMI Enquiry' },
+  { value: 'complaint', label: '⚠️ Complaint' },
+  { value: 'other', label: '💬 Other' },
+];
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -40,7 +104,7 @@ export default function ContactPage() {
       } else {
         toast.error('Failed to send message. Please try again.');
       }
-    } catch (error) {
+    } catch {
       toast.error('Something went wrong!');
     }
 
@@ -49,6 +113,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen">
+
       {/* Header */}
       <section className="relative py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
@@ -61,8 +126,7 @@ export default function ContactPage() {
               <span className="gradient-text">Contact</span> Us
             </h1>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Have questions? Want to test ride? Visit our store or drop us a
-              message!
+              Have questions? Want to test ride? Visit our store or drop us a message!
             </p>
           </AnimatedSection>
         </div>
@@ -106,12 +170,11 @@ export default function ContactPage() {
                 <motion.a
                   href={item.link}
                   target={item.link.startsWith('http') ? '_blank' : undefined}
+                  rel="noopener noreferrer"
                   whileHover={{ y: -5 }}
                   className="glass rounded-2xl p-6 text-center block"
                 >
-                  <div
-                    className={`w-14 h-14 mx-auto rounded-xl bg-gradient-to-r ${item.color} flex items-center justify-center mb-4`}
-                  >
+                  <div className={`w-14 h-14 mx-auto rounded-xl bg-gradient-to-r ${item.color} flex items-center justify-center mb-4`}>
                     <item.icon className="text-xl text-white" />
                   </div>
                   <h3 className="font-bold text-white mb-1">{item.title}</h3>
@@ -132,86 +195,62 @@ export default function ContactPage() {
                 Send us a Message
               </h2>
               <form onSubmit={handleSubmit} className="space-y-6">
+
                 <div className="grid sm:grid-cols-2 gap-6">
                   <div>
-                    <label className="text-sm text-gray-400 mb-2 block">
-                      Your Name *
-                    </label>
+                    <label className="text-sm text-gray-400 mb-2 block">Your Name *</label>
                     <input
                       type="text"
                       required
                       value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white"
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-primary focus:outline-none transition-colors"
                       placeholder="John Doe"
                     />
                   </div>
                   <div>
-                    <label className="text-sm text-gray-400 mb-2 block">
-                      Phone Number *
-                    </label>
+                    <label className="text-sm text-gray-400 mb-2 block">Phone Number *</label>
                     <input
                       type="tel"
                       required
                       value={formData.phone}
-                      onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
-                      }
-                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white"
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-primary focus:outline-none transition-colors"
                       placeholder="+91 98765 43210"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-sm text-gray-400 mb-2 block">
-                    Email
-                  </label>
+                  <label className="text-sm text-gray-400 mb-2 block">Email</label>
                   <input
                     type="email"
                     value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white"
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-primary focus:outline-none transition-colors"
                     placeholder="john@example.com"
                   />
                 </div>
 
+                {/* ✅ Custom dark subject dropdown */}
                 <div>
-                  <label className="text-sm text-gray-400 mb-2 block">
-                    Subject
-                  </label>
-                  <select
+                  <label className="text-sm text-gray-400 mb-2 block">Subject</label>
+                  <CustomSelect
                     value={formData.subject}
-                    onChange={(e) =>
-                      setFormData({ ...formData, subject: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white"
-                  >
-                    <option value="">Select a subject</option>
-                    <option value="inquiry">Product Inquiry</option>
-                    <option value="test-ride">Book Test Ride</option>
-                    <option value="service">Service Request</option>
-                    <option value="complaint">Complaint</option>
-                    <option value="other">Other</option>
-                  </select>
+                    onChange={(val) => setFormData({ ...formData, subject: val })}
+                    placeholder="Select a subject"
+                    options={subjectOptions}
+                  />
                 </div>
 
                 <div>
-                  <label className="text-sm text-gray-400 mb-2 block">
-                    Message *
-                  </label>
+                  <label className="text-sm text-gray-400 mb-2 block">Message *</label>
                   <textarea
                     required
                     rows={5}
                     value={formData.message}
-                    onChange={(e) =>
-                      setFormData({ ...formData, message: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white resize-none"
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white resize-none focus:border-primary focus:outline-none transition-colors"
                     placeholder="Tell us what you need..."
                   />
                 </div>
@@ -223,14 +262,7 @@ export default function ContactPage() {
                   whileTap={{ scale: 0.98 }}
                   className="w-full btn-primary py-4 rounded-xl text-white font-bold text-lg flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {sending ? (
-                    'Sending...'
-                  ) : (
-                    <>
-                      <FaPaperPlane />
-                      Send Message
-                    </>
-                  )}
+                  {sending ? 'Sending...' : <><FaPaperPlane /> Send Message</>}
                 </motion.button>
               </form>
             </div>
