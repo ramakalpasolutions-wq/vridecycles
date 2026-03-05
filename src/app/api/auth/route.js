@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { verifyAdmin } from '@/lib/store'; // ✅ updated import
+import { verifyAdmin } from '@/lib/store';
 
 export async function POST(request) {
   try {
@@ -23,6 +23,7 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true, message: 'Login successful' });
   } catch (error) {
+    console.error('Auth error:', error);
     return NextResponse.json(
       { error: 'Authentication failed' },
       { status: 500 }

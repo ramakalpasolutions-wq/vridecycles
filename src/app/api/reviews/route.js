@@ -1,21 +1,26 @@
 import { NextResponse } from 'next/server';
-import { getReviews, addReview } from '@/lib/store'; // ✅ from store now
+import connectDB from '@/lib/mongodb';
+import Review from '@/lib/models/Review';
 
 export async function GET() {
   try {
-    const reviews = getReviews();
+    await connectDB();
+    const reviews = await Review.find().sort({ createdAt: -1 });
     return NextResponse.json(reviews);
   } catch (error) {
+    console.error('GET reviews error:', error);
     return NextResponse.json({ error: 'Failed to fetch reviews' }, { status: 500 });
   }
 }
 
 export async function POST(request) {
   try {
+    await connectDB();
     const body = await request.json();
-    const newReview = addReview(body);
-    return NextResponse.json(newReview, { status: 201 });
+    const review = await Review.create(body);
+    return NextResponse.json(review, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to add review' }, { status: 500 });
+    console.error('POST review error:', error);
+    return NextResponse.json({ error: 'Failed to create review' }, { status: 500 });
   }
 }
